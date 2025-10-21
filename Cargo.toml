@@ -1,0 +1,20 @@
+[package]
+name = "http_server_maxwell"
+license = "MIT"
+version = "0.1.0"
+edition = "2024"
+
+[profile.dev]
+opt-level = 0
+overflow-checks = false
+
+[profile.release]
+codegen-units = 1
+lto = "fat"
+overflow-checks = true
+opt-level = 3
+panic = "abort"
+strip = "symbols"
+
+[dependencies]
+flate2 = { version = "1.1.4", features = ["zlib-rs"], default-features = false }
