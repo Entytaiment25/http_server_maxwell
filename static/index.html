@@ -4,7 +4,22 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1.0" />
         <title>Maxwell</title>
+        <meta name="description" content="Spinning Cat" />
         <link rel="icon" href="data:," />
+        <link
+            rel="preload"
+            href="static/maxwell.webm"
+            as="video"
+            type="video/webm"
+            fetchpriority="high"
+        />
+        <link
+            rel="preload"
+            href="static/lq-store.mp3"
+            as="audio"
+            type="audio/mpeg"
+            fetchpriority="high"
+        />
         <style>
             html,
             body {
@@ -17,17 +32,21 @@
                 background-color: #fff;
                 color: #000;
                 font-family: Arial, sans-serif;
+                font-display: swap;
             }
             .audio-player {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 gap: 15px;
+                width: 100%;
+                max-width: 800px;
             }
             .maxwell-video {
-                width: auto;
-                height: auto;
+                width: 640px;
+                height: 480px;
                 max-width: 100%;
+                aspect-ratio: 4/3;
             }
             .play-button {
                 background: 0 0;
@@ -36,6 +55,52 @@
                 cursor: pointer;
                 padding: 0;
                 line-height: 1;
+                width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .controls {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+                width: 100%;
+                max-width: 200px;
+            }
+            .top-controls {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                width: 100%;
+                justify-content: center;
+            }
+            .play-button {
+                transition: opacity 0.2s;
+            }
+            .play-button:hover {
+                opacity: 0.6;
+            }
+            .time-display {
+                font-size: 14px;
+                font-family: monospace;
+                color: #333;
+                min-width: 80px;
+                text-align: center;
+            }
+            .progress-bar {
+                width: 200px;
+                height: 4px;
+                background-color: #ddd;
+                border-radius: 2px;
+                overflow: hidden;
+            }
+            .progress-fill {
+                height: 100%;
+                background-color: #333;
+                width: 0;
+                transition: width 0.1s linear;
             }
         </style>
     </head>
@@ -80,42 +145,5 @@
                             (a.currentTime / a.duration) * 100 + "%"));
             });
         </script>
-        <style>
-            .controls {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 8px;
-            }
-            .top-controls {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-            }
-            .play-button {
-                transition: opacity 0.2s;
-            }
-            .play-button:hover {
-                opacity: 0.6;
-            }
-            .time-display {
-                font-size: 14px;
-                font-family: monospace;
-                color: #333;
-            }
-            .progress-bar {
-                width: 200px;
-                height: 4px;
-                background-color: #ddd;
-                border-radius: 2px;
-                overflow: hidden;
-            }
-            .progress-fill {
-                height: 100%;
-                background-color: #333;
-                width: 0;
-                transition: width 0.1s linear;
-            }
-        </style>
     </body>
 </html>

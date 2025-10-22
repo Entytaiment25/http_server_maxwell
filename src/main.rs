@@ -37,6 +37,7 @@ fn handle_client(mut stream: TcpStream) {
 
     let file_path = match path {
         "/" => "static/index.html",
+        "/robots.txt" => "static/robots.txt",
         "/static/maxwell.webm" => "static/maxwell.webm",
         "/static/lq-store.mp3" => "static/lq-store.mp3",
         _ => return,
@@ -48,6 +49,7 @@ fn handle_client(mut stream: TcpStream) {
                 path if path.ends_with(".html") => "text/html",
                 path if path.ends_with(".webm") => "video/webm",
                 path if path.ends_with(".mp3") => "audio/mpeg",
+                path if path.ends_with(".txt") => "text/plain",
                 _ => "application/octet-stream",
             };
 
