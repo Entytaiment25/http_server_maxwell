@@ -1,5 +1,4 @@
-use flate2::Compression;
-use flate2::write::GzEncoder;
+use brotli::enc::BrotliEncoderParams;
 use std::fs;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
@@ -12,10 +11,14 @@ fn minify_html(html: &str) -> String {
         .join("")
 }
 
-fn gzip_compress(data: &[u8]) -> Vec<u8> {
-    let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
-    encoder.write_all(data).unwrap();
-    encoder.finish().unwrap()
+fn brotli_compress(data: &[u8]) -> Vec<u8> {
+    let mut output = Vec::new();
+    let params = BrotliEncoderParams {
+        quality: 11,
+        ..Default::default()
+    };
+    brotli::BrotliCompress(&mut std::io::Cursor::new(data), &mut output, &params).unwrap();
+    output
 }
 
 fn handle_client(mut stream: TcpStream) {
@@ -34,7 +37,8 @@ fn handle_client(mut stream: TcpStream) {
 
     let file_path = match path {
         "/" => "static/index.html",
-        "/static/maxwell.gif" => "static/maxwell.gif",
+        "/static/maxwell.webm" => "static/maxwell.webm",
+        "/static/lq-store.mp3" => "static/lq-store.mp3",
         _ => return,
     };
 
@@ -42,24 +46,36 @@ fn handle_client(mut stream: TcpStream) {
         Ok(contents) => {
             let content_type = match file_path {
                 path if path.ends_with(".html") => "text/html",
-                path if path.ends_with(".gif") => "image/gif",
+                path if path.ends_with(".webm") => "video/webm",
+                path if path.ends_with(".mp3") => "audio/mpeg",
                 _ => "application/octet-stream",
             };
 
-            let data = if file_path.ends_with(".html") {
-                minify_html(&String::from_utf8_lossy(&contents)).into_bytes()
+            let (data, response_headers) = if file_path.ends_with(".html") {
+                let minified = minify_html(&String::from_utf8_lossy(&contents)).into_bytes();
+                let compressed = brotli_compress(&minified);
+                (
+                    compressed,
+                    "Content-Encoding: br\r\nCache-Control: public, max-age=31536000",
+                )
+            } else if file_path.ends_with(".webm") || file_path.ends_with(".mp3") {
+                (
+                    contents,
+                    "Accept-Ranges: bytes\r\nCache-Control: public, max-age=31536000",
+                )
             } else {
-                contents
+                (contents, "")
             };
 
-            let compressed = gzip_compress(&data);
             let response = format!(
-                "HTTP/1.1 200 OK\r\nContent-Type: {}\r\nContent-Encoding: gzip\r\nContent-Length: {}\r\n\r\n",
+                "HTTP/1.1 200 OK\r\nContent-Type: {}\r\nContent-Length: {}\r\n{}\r\n\r\n",
                 content_type,
-                compressed.len()
+                data.len(),
+                response_headers
             );
+
             let _ = stream.write_all(response.as_bytes());
-            let _ = stream.write_all(&compressed);
+            let _ = stream.write_all(&data);
         }
         Err(_) => {
             let _ = stream.write_all(b"HTTP/1.1 404 Not Found\r\n\r\n");
