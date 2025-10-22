@@ -40,7 +40,10 @@ fn handle_client(mut stream: TcpStream) {
         "/robots.txt" => "static/robots.txt",
         "/static/maxwell.webm" => "static/maxwell.webm",
         "/static/lq-store.mp3" => "static/lq-store.mp3",
-        _ => return,
+        _ => {
+            let _ = stream.write_all(b"HTTP/1.1 404 Not Found\r\n\r\n");
+            return;
+        }
     };
 
     match fs::read(file_path) {
