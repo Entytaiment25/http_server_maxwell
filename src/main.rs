@@ -89,7 +89,7 @@ fn handle_client(mut stream: TcpStream) {
 }
 
 fn main() {
-    let listener = TcpListener::bind("127.0.0.1:8080").expect("Could not bind");
+    let listener = TcpListener::bind("0.0.0.0:8080").expect("Could not bind");
     for stream in listener.incoming().flatten() {
         std::thread::spawn(|| handle_client(stream));
     }
