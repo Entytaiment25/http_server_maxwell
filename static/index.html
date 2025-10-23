@@ -1,149 +1,139 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-        <title>Maxwell</title>
-        <meta name="description" content="Spinning Cat" />
-        <link rel="icon" href="data:," />
-        <link
-            rel="preload"
-            href="static/maxwell.webm"
-            as="video"
-            type="video/webm"
-            fetchpriority="high"
-        />
-        <link
-            rel="preload"
-            href="static/lq-store.mp3"
-            as="audio"
-            type="audio/mpeg"
-            fetchpriority="high"
-        />
-        <style>
-            html,
-            body {
-                margin: 0;
-                padding: 0;
-                height: 100%;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                background-color: #fff;
-                color: #000;
-                font-family: Arial, sans-serif;
-                font-display: swap;
-            }
-            .audio-player {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 15px;
-                width: 100%;
-                max-width: 800px;
-            }
-            .maxwell-video {
-                width: 640px;
-                height: 480px;
-                max-width: 100%;
-                aspect-ratio: 4/3;
-            }
-            .play-button {
-                background: 0 0;
-                border: none;
-                font-size: 24px;
-                cursor: pointer;
-                padding: 0;
-                line-height: 1;
-                width: 32px;
-                height: 32px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .controls {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 8px;
-                width: 100%;
-                max-width: 200px;
-            }
-            .top-controls {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                width: 100%;
-                justify-content: center;
-            }
-            .play-button {
-                transition: opacity 0.2s;
-            }
-            .play-button:hover {
-                opacity: 0.6;
-            }
-            .time-display {
-                font-size: 14px;
-                font-family: monospace;
-                color: #333;
-                min-width: 80px;
-                text-align: center;
-            }
-            .progress-bar {
-                width: 200px;
-                height: 4px;
-                background-color: #ddd;
-                border-radius: 2px;
-                overflow: hidden;
-            }
-            .progress-fill {
-                height: 100%;
-                background-color: #333;
-                width: 0;
-                transition: width 0.1s linear;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="audio-player">
-            <video class="maxwell-video" autoplay loop muted playsinline>
-                <source src="static/maxwell.webm" type="video/webm" />
-            </video>
-            <div class="controls">
-                <div class="top-controls">
-                    <button class="play-button" onclick="togglePlay()">
-                        ▶
-                    </button>
-                    <div class="time-display">
-                        <span id="currentTime">0:00</span> - ∞
-                    </div>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Maxwell</title>
+    <meta name="description" content="Spinning Cat">
+    <link rel="icon" href="data:,">
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #fff;
+            color: #000;
+            font-family: sans-serif;
+        }
+
+        .audio-player {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .maxwell-video {
+            width: 640px;
+            height: 480px;
+            max-width: 100%;
+            aspect-ratio: 4/3;
+        }
+
+        .play-button {
+            background: 0 0;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        .top-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .play-button {
+            transition: opacity 0.2s;
+        }
+
+        .play-button:hover {
+            opacity: 0.6;
+        }
+
+        .time-display {
+            font-size: 14px;
+            font-family: monospace;
+            color: #333;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 200px;
+            height: 4px;
+            background-color: #ddd;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #333;
+            width: 0;
+            transition: width 0.1s linear;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="audio-player">
+        <video class="maxwell-video" autoplay="" loop="" muted="" playsinline="">
+            <source src="static/maxwell.webm" type="video/webm">
+        </video>
+        <div class="controls">
+            <div class="top-controls">
+                <button class="play-button" onclick="togglePlay()">▶</button>
+                <div class="time-display"><span id="currentTime">0:00</span> - ∞</div>
             </div>
-            <audio id="audio" loop>
-                <source src="static/lq-store.mp3" type="audio/mpeg" />
-            </audio>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
         </div>
-        <script>
-            const a = document.getElementById("audio"),
-                b = document.querySelector(".play-button"),
-                c = document.getElementById("currentTime"),
-                d = document.getElementById("progressFill");
-            function togglePlay() {
-                a.paused
-                    ? (a.play(), (b.textContent = "⏸"))
-                    : (a.pause(), (b.textContent = "▶"));
-            }
-            a.addEventListener("timeupdate", () => {
-                const e = Math.floor(a.currentTime / 60),
-                    f = Math.floor(a.currentTime % 60);
-                ((c.textContent = `${e}:${f.toString().padStart(2, "0")}`),
-                    a.duration &&
-                        (d.style.width =
-                            (a.currentTime / a.duration) * 100 + "%"));
-            });
-        </script>
-    </body>
-</html>
+        <audio id="audio" loop="">
+            <source src="static/lq-store.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+    <script>
+        const a = document.getElementById("audio"),
+            b = document.querySelector(".play-button"),
+            c = document.getElementById("currentTime"),
+            d = document.getElementById("progressFill");
+        function togglePlay() {
+            a.paused
+                ? (a.play(), (b.textContent = "⏸"))
+                : (a.pause(), (b.textContent = "▶"));
+        }
+        a.addEventListener("timeupdate", () => {
+            const e = Math.floor(a.currentTime / 60),
+                f = Math.floor(a.currentTime % 60);
+            (c.textContent = `${e}:${f.toString().padStart(2, "0")}`),
+                a.duration &&
+                (d.style.width = (a.currentTime / a.duration) * 100 + "%");
+        });
+    </script>
+
+
+</body></html>
