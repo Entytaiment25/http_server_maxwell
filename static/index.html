@@ -1,11 +1,9 @@
-<!doctype html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<!DOCTYPE html><html lang="en"><head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1.0">
         <title>Maxwell</title>
-        <meta name="description" content="Spinning Cat" />
-        <link rel="icon" href="data:," />
+        <meta name="description" content="Spinning Cat">
+        <link rel="icon" href="data:,">
         <style>
             html,
             body {
@@ -34,6 +32,8 @@
                 height: 480px;
                 max-width: 100%;
                 aspect-ratio: 4/3;
+                cursor: pointer;
+                outline: none;
             }
 
             .play-button {
@@ -97,44 +97,13 @@
                 width: 0;
                 transition: width 0.1s linear;
             }
-
-            .fullscreen-button {
-                background: 0 0;
-                border: none;
-                font-size: 24px;
-                cursor: pointer;
-                padding: 0;
-                line-height: 1;
-                width: 32px;
-                height: 32px;
-                display: none;
-                align-items: center;
-                justify-content: center;
-                transition: opacity 0.2s;
-            }
-
-            .fullscreen-button:hover {
-                opacity: 0.6;
-            }
-
-            @media (max-width: 768px) {
-                .fullscreen-button {
-                    display: flex;
-                }
-            }
         </style>
     </head>
 
     <body>
         <div class="audio-player">
-            <video
-                class="maxwell-video"
-                autoplay=""
-                loop=""
-                muted=""
-                playsinline=""
-            >
-                <source src="static/maxwell.webm" type="video/webm" />
+            <video class="maxwell-video" autoplay="" loop="" muted="" playsinline="">
+                <source src="static/maxwell.webm" type="video/webm">
             </video>
             <div class="controls">
                 <div class="top-controls">
@@ -150,7 +119,7 @@
                 </div>
             </div>
             <audio id="audio" loop="">
-                <source src="static/lq-store.mp3" type="audio/mpeg" />
+                <source src="static/lq-store.mp3" type="audio/mpeg">
             </audio>
         </div>
         <script>
@@ -171,6 +140,11 @@
                         (d.style.width =
                             (a.currentTime / a.duration) * 100 + "%"));
             });
+
+            document.querySelector('.maxwell-video').onclick = function() {
+                document.documentElement.requestFullscreen();
+            };
         </script>
-    </body>
-</html>
+    
+
+</body></html>
