@@ -1,29 +1,20 @@
-use brotli::enc::BrotliEncoderParams;
 use std::fs;
-use std::io::{Read, Write};
-use std::net::{TcpListener, TcpStream};
+use std::io::{ Read, Write };
+use std::net::{ TcpListener, TcpStream };
+use flate2::{ Compression, write::GzEncoder };
 
 fn minify_html(html: &str) -> String {
-    html.lines()
-        .map(|line| line.trim())
-        .filter(|line| !line.is_empty())
-        .collect::<Vec<_>>()
-        .join("")
+    html.split_whitespace().collect::<Vec<_>>().join(" ").replace("> <", "><")
 }
 
-fn brotli_compress(data: &[u8]) -> Vec<u8> {
-    let mut output = Vec::new();
-    let params = BrotliEncoderParams {
-        quality: 11,
-        ..Default::default()
-    };
-    brotli::BrotliCompress(&mut std::io::Cursor::new(data), &mut output, &params).unwrap();
-    output
+fn gzip_compress(data: &[u8]) -> Result<Vec<u8>, std::io::Error> {
+    let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
+    encoder.write_all(data)?;
+    encoder.finish()
 }
 
 fn handle_client(mut stream: TcpStream) {
     let mut buffer = [0; 2048];
-
     if stream.read(&mut buffer).is_err() {
         return;
     }
@@ -46,46 +37,58 @@ fn handle_client(mut stream: TcpStream) {
         }
     };
 
-    match fs::read(file_path) {
-        Ok(contents) => {
-            let content_type = match file_path {
-                path if path.ends_with(".html") => "text/html",
-                path if path.ends_with(".webm") => "video/webm",
-                path if path.ends_with(".mp3") => "audio/mpeg",
-                path if path.ends_with(".txt") => "text/plain",
-                _ => "application/octet-stream",
-            };
+    let Ok(contents) = fs::read(file_path) else {
+        let _ = stream.write_all(b"HTTP/1.1 404 Not Found\r\n\r\n");
+        return;
+    };
 
-            let (data, response_headers) = if file_path.ends_with(".html") {
-                let minified = minify_html(&String::from_utf8_lossy(&contents)).into_bytes();
-                let compressed = brotli_compress(&minified);
-                (
-                    compressed,
-                    "Content-Encoding: br\r\nCache-Control: public, max-age=31536000",
-                )
-            } else if file_path.ends_with(".webm") || file_path.ends_with(".mp3") {
-                (
-                    contents,
-                    "Accept-Ranges: bytes\r\nCache-Control: public, max-age=31536000",
-                )
-            } else {
-                (contents, "")
-            };
+    let content_type = match file_path {
+        path if path.ends_with(".html") => "text/html; charset=utf-8",
+        path if path.ends_with(".webm") => "video/webm",
+        path if path.ends_with(".mp3") => "audio/mpeg",
+        path if path.ends_with(".txt") => "text/plain",
+        _ => "application/octet-stream",
+    };
 
-            let response = format!(
-                "HTTP/1.1 200 OK\r\nContent-Type: {}\r\nContent-Length: {}\r\n{}\r\n\r\n",
-                content_type,
-                data.len(),
-                response_headers
-            );
-
-            let _ = stream.write_all(response.as_bytes());
-            let _ = stream.write_all(&data);
+    let (data, encoding) = if file_path.ends_with(".html") {
+        let minified = minify_html(&String::from_utf8_lossy(&contents)).into_bytes();
+        match gzip_compress(&minified) {
+            Ok(compressed) if compressed.len() < minified.len() => {
+                (compressed, "Content-Encoding: gzip\r\n")
+            }
+            _ => (minified, ""),
         }
-        Err(_) => {
-            let _ = stream.write_all(b"HTTP/1.1 404 Not Found\r\n\r\n");
-        }
-    }
+    } else {
+        (contents, "")
+    };
+
+    let cache_control = if
+        file_path.ends_with(".html") ||
+        file_path.ends_with(".webm") ||
+        file_path.ends_with(".mp3")
+    {
+        "Cache-Control: public, max-age=31536000\r\n"
+    } else {
+        ""
+    };
+
+    let accept_ranges = if file_path.ends_with(".webm") || file_path.ends_with(".mp3") {
+        "Accept-Ranges: bytes\r\n"
+    } else {
+        ""
+    };
+
+    let response = format!(
+        "HTTP/1.1 200 OK\r\nContent-Type: {}\r\nContent-Length: {}\r\n{}{}{}\r\n",
+        content_type,
+        data.len(),
+        encoding,
+        cache_control,
+        accept_ranges
+    );
+
+    let _ = stream.write_all(response.as_bytes());
+    let _ = stream.write_all(&data);
 }
 
 fn main() {

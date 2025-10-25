@@ -17,4 +17,4 @@ panic = "abort"
 strip = "symbols"
 
 [dependencies]
-brotli = "8.0.2"
+flate2 = { version = "1.1.5", features = ["zlib-rs"], default-features = false }
